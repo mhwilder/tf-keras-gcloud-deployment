@@ -31,11 +31,34 @@ If not on Mac, follow the TensorFlow installation instructions [here](https://ww
 
 In this example, we are training a very simple fully convolutional model on a toy dataset. The output heatmaps capture the brightest parts of the image. This problem is not very interesting, but it will allow us to train a model quickly and use it for deployment. The multidimensional nature of the output makes the deployment a bit more interesting, but all the steps below should be the same for a flat output such as what you'd have with a simple classification model.
 
+### Model Training
+
 In the root directory of the repo, run:
 
 ```bash
 python train.py
 ```
+
+### Exporting the Model
+
+Here we need to convert our tf.keras .h5 model so the SavedModel format that is compatible with GCP deployment. There are quite a few complexities in setting everything up to correctly work. The biggest challenge is getting the input data handled correctly for the desired format. This StackOverflow [post](https://stackoverflow.com/questions/51432589/how-do-i-get-a-tensorflow-keras-model-that-takes-images-as-input-to-serve-predic) was particularly helpful in getting everything right.
+
+In this code, we will export three different models that are set up to handle data in different formats. When calling "gcloud ml-engine predict", the input is always a JSON file, but the contents within the JSON file vary depending on the desired input type. The following formats are supported:
+1. Image converted to a list and written as a string in the JSON file
+    - This is the simplest approach, but the least efficient and for larger images, the JSON file exceeds the filesize limit
+2. JPEG image bytes written to a string using a base64 encoding
+    - More complex, but smaller JSON file size
+3. Image is just a URL in the JSON file (generally pointing to an image file stored in some bucket in GCP Storage)
+
+Run the following code to export the three different models. They'll end up in the "models" folder.
+
+```bash
+python export_models.py
+```
+
+NOTE: This base64 and url methods assume that the images are always jpeg. The code will need to be adapted to work with other image types.
+
+NOTE: This section doesn't do much to optimize the size of the model. There are other actions that can be taken in the export process to optimize the model for inference. This [tutorial](https://cloud.google.com/ml-engine/docs/tensorflow/deploying-models) has some helpful information.
 
 ## General GCP Configuration
 
