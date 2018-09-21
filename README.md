@@ -56,7 +56,7 @@ Run the following code to export the three different models. They'll end up in t
 python export_models.py
 ```
 
-NOTE: This base64 and url methods assume that the images are always jpeg. The code will need to be adapted to work with other image types.
+NOTE: The base64 and url methods assume that the images are always jpeg. The code will need to be adapted to work with other image types. Just switching to decode\_image instead of decode\_jpeg does not solve the problem because decode\_image has variable output shape because of the GIF format.
 
 NOTE: This section doesn't do much to optimize the size of the model. There are other actions that can be taken in the export process to optimize the model for inference. This [tutorial](https://cloud.google.com/ml-engine/docs/tensorflow/deploying-models) has some helpful information.
 
