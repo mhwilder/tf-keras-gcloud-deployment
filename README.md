@@ -12,7 +12,7 @@ What is shown here is just one way to get this whole process working. The specif
 
 This code is tested in python 3.6 on Mac OSX 10.13 with an Anaconda distribution (though all dependencies are reinstalled). The python libraries required are all installed within a virtual environment. If you don't have virtualenv, install it before proceeding. In the project root directory, run the following:
 
-```bash
+```
 virtualenv env
 source env/bin/activate
 pip install -r requirements.txt
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 In this codebase we are using TensorFlow version 1.10 without a GPU. We will install it directly using the following command:
 
-```bash
+```
 pip install --upgrade https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.10.1-py3-none-any.whl
 ```
 
@@ -38,7 +38,7 @@ In this example, we are training a very simple fully convolutional model on a to
 
 In the root directory of the repo, run:
 
-```bash
+```
 python train.py
 ```
 
@@ -56,7 +56,7 @@ In this code, we will export three different models that are set up to handle da
 
 Run the following code to export the three different models. They'll end up in the "models" folder.
 
-```bash
+```
 python export_models.py
 ```
 
@@ -130,7 +130,7 @@ In both examples above, the "input\_key" should be consistent with the input key
 
 To generate these sample input JSON files for a test image in "data/test", run the following script:
 
-```bash
+```
 python image_to_json.py
 ```
 
@@ -141,7 +141,7 @@ Note that the base64 encoded JSON file is about 60 times smaller than the file w
 
 In this example, we will create a single model and then use different versions of the model to test the different types of input. In production you might want to break these out into separate models depending on the requirements, but for this demo we went with the simplest path. Instructions for the model deployment process can be found [here](https://cloud.google.com/ml-engine/docs/tensorflow/getting-started-training-prediction#deploy_a_model_to_support_prediction) or [here](https://cloud.google.com/ml-engine/docs/tensorflow/deploying-models#creating_a_model_version). However, you can also just run the following terminal commands:
 
-```bash
+```
 MODEL_NAME=highlights_fcn
 gcloud ml-engine models create $MODEL_NAME --regions=$REGION
 gcloud ml-engine models list
