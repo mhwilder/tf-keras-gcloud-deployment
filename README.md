@@ -86,7 +86,7 @@ To deploy a model to GCP, you need to have a storage bucket on GCP where the mod
 
 NOTE: if you already had the Google cloud SDK installed on your machine, you will probably need to set the active project to the one we created in the above steps. You can do this with the following terminal command:
 
-```bash
+```
 gcloud config set project tf-keras-deploy
 ```
 
@@ -94,7 +94,7 @@ Be sure that the last parameter above is the project_id, not the project name. I
 
 To create a new bucket run the following commands in the terminal:
 
-```bash
+```
 PROJECT_ID=$(gcloud config list project --format "value(core.project)")
 BUCKET_NAME=${PROJECT_ID}-mlengine
 echo $BUCKET_NAME
@@ -154,7 +154,7 @@ Below, we provide examples for the 3 different input scenarios. In each case, we
 
 Before we jump into deploying and testing the models, let's first run our test image through our trained model locally to see what the model predictions should look like.
 
-```bash
+```
 python evaluate.py --image_path data/test/test_img.jpg \
                    --heatmap_path data/test/test_heatmap.jpg \
                    --output_name local
