@@ -118,13 +118,13 @@ Before moving on to testing, we will prepare some JSON input files that have the
 
 This may be necessary for processing a set of images. For single image processing, we found that it was necessary to use the following simpler format:
 
-```json
+```
 {"input_key": image_content}
 ```
 
 In both examples above, the "input\_key" should be consistent with the input key used in [export_models.py](export_models.py). For base64 encodings, this key must end with the string "bytes". The image content will differ depending on the input type being used. For the image as list string, this content is just a big string with the list. For the URL input version, the image_content is just a string with the URL. For the base64 encoded input, the image content is actually another dictionary that looks like this:
 
-```json
+```
 {"b64": base64_encoded_string}
 ```
 
