@@ -107,10 +107,10 @@ gsutil mb -l $REGION gs://$BUCKET_NAME
 
 Before moving on to testing, we will prepare some JSON input files that have the correct data format. Some of the docs suggest a JSON input format that looks something like this:
 
-```json
+```
 {
   "instances": [
-    {"input_key": image\_content},
+    {"input_key": image_content},
     {"input_key": image_content}       
   ]
 }
