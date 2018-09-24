@@ -110,7 +110,7 @@ Before moving on to testing, we will prepare some JSON input files that have the
 ```json
 {
   "instances": [
-    {"input_key": image_content},
+    {"input_key": image\_content},
     {"input_key": image_content}       
   ]
 }
@@ -150,7 +150,7 @@ gcloud ml-engine models list
 Below, we provide examples for the 3 different input scenarios. In each case, we first upload the appropriate model files to the bucket we created (we'll put them each inside a top level folder called "models"). Then we use the ml-engine versions create tool to create a new model version. Finally, we test the deployed model to make sure we get back reasonable results.
 
 
-### Local Model Testing
+### Local model testing
 
 Before we jump into deploying and testing the models, let's first run our test image through our trained model locally to see what the model predictions should look like.
 
