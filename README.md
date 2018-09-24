@@ -271,6 +271,85 @@ Compare this to the local predictions figure to be sure it looks right.
 
 ### Image as URL
 
+To test passing the image as a URL, we first need to upload the test image into the bucket we created for this project. In general, this approach is useful when you already have a bunch of data uploaded to Google storage and you want to run it all through the model. Run the following command to upload the test image into the bucket:
+
+```
+gsutil cp data/test/test_img.jpg gs://$BUCKET_NAME/data/test/test_img.jpg 
+```
+
+NOTE: the remote file path must match what gets written to the JSON input file in the [image_to_json.py](image_to_json.py) script
+
+Next we repeat a similar set of commands as above.
+
+Set up some bash variables specific to this input type:
+
+```
+EXPORT_VERSION=v1    # this should be whatever is hardcoded in export_models.py
+INPUT_TYPE=json_url  # this is also hardcoded in export_models.py
+VERSION_NAME=${INPUT_TYPE}_${EXPORT_VERSION}
+echo $VERSION_NAME
+BINARY_DIR_NAME=$(ls -1 models/$INPUT_TYPE/$EXPORT_VERSION)
+LOCAL_BINARIES=models/$INPUT_TYPE/$EXPORT_VERSION/$BINARY_DIR_NAME
+echo $LOCAL_BINARIES
+REMOTE_BINARIES=gs://$BUCKET_NAME/$LOCAL_BINARIES
+```
+
+Upload the model to the cloud and create a model version for this input type:
+
+```
+gsutil cp -r $LOCAL_BINARIES $REMOTE_BINARIES
+gcloud ml-engine versions create $VERSION_NAME \
+                                 --model $MODEL_NAME \
+                                 --origin $REMOTE_BINARIES \
+                                 --runtime-version 1.10
+```
+
+The creation of the model version takes a little while to process. Once it is done, you can verify that the model is there with the following command:
+
+```
+gcloud ml-engine versions list --model $MODEL_NAME
+```
+
+Now that the model is all set, we can call the model to get a prediction:
+
+```
+gcloud ml-engine predict --model $MODEL_NAME \
+                         --version $VERSION_NAME \
+                         --json-instances data/test/test_json_url.json \
+                         > preds/test_json_url.txt
+```
+
+HACK ALERT:
+
+When I execute the above command, the "preds/test\_json\_url.txt" actually contains an error message saying that the cloud ML service is not able to access the bucket with the data. This a bit strange because the bucket is part of the same project. From the IAM section of the GCP web interface, the cloud ml service appears to have the correct permissions and there is no service name that actually matches the service mentioned in the error message. This problem is similar to what is documented in this StackOverflow [question](https://stackoverflow.com/questions/49054125/cloud-ml-service-account-cannot-access-cloud-storage-and-is-not-listed-in-iam) except concerns the data access and not the model access (the model access already worked for us above). The question is not definitively answered though.
+
+It is possible that this problem is unique to my particular setup, but if you encounter it as well, follow the next steps to resolve it:
+
+1. Find the name of the service that "does not have storage.objects.get access"
+    - Should look something like "cloud-ml-service-cml@******-cml.iam.gserviceaccount.com"
+2. Log in to GCP web portal and click on the "Storage" section
+3. Be sure to select the "tf-keras-deploy" project at the top
+4. Click on the "tf-keras-deploy-mlengine" bucket
+5. Select the "Permissions" tab
+6. Click "Add members"
+7. Copy the name of the service into the text input
+8. Select "Storage Object Viewer" for "Select a role" and click "Add"
+
+Once you have done this, rerun the command above and it should work this time.
+
+NOTE: If anyone has a better solution to this issue, please share.
+
+Finally create a visualization of the result to make sure it looks right:
+
+```
+python evaluate.py --image_path data/test/test_img.jpg \
+                   --heatmap_path data/test/test_heatmap.jpg \
+                   --output_name url \
+                   --text_preds_path preds/test_json_url.txt
+```
+
+Compare this to the local predictions figure to be sure it looks right.
+
 
 ## Batch Prediction
 
