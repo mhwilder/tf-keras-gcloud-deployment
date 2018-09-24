@@ -3,7 +3,7 @@ Training and deploying a TensorFlow tf.keras model using Google Cloud ML Engine
 
 ## Introduction
 
-While trying to deploy a tf.keras model using Google Cloud Platform (GCP) ML Engine, I ran into many challenges and found the documentation lacking in many ways. Once I finally got things working, I decided to put it all together in this repo to potentially help others who are doing the same thing. This codebase focuses on the cloud deployment side of things. All of the model training is done locally, but there are many tutorials for how to train on the cloud as well. The deployment scenario also mainly deals with image inputs, though handles them in different ways (including a simple list string, a base64 encoding, and GCP Storage link).
+While trying to deploy a tf.keras model using Google Cloud Platform (GCP) ML Engine, we ran into many challenges and found the documentation lacking in many ways. Once things were finally working, we decided to put it all together in this repo to potentially help others who are doing the same thing. This codebase focuses on the cloud deployment side of things. All of the model training is done locally, but there are many tutorials for how to train on the cloud as well. The deployment scenario also mainly deals with image inputs, though handles them in different ways (including a simple list string, a base64 encoding, and GCP Storage link).
 
 What is shown here is just one way to get this whole process working. The specific configurations may not be optimal for everyone's use case. Additionally, this field moves very quickly and the APIs are often changing so what works now may not work in 6 months.
 
@@ -321,9 +321,9 @@ gcloud ml-engine predict --model $MODEL_NAME \
 
 HACK ALERT:
 
-When I execute the above command, the "preds/test\_json\_url.txt" actually contains an error message saying that the cloud ML service is not able to access the bucket with the data. This a bit strange because the bucket is part of the same project. From the IAM section of the GCP web interface, the cloud ml service appears to have the correct permissions and there is no service name that actually matches the service mentioned in the error message. This problem is similar to what is documented in this StackOverflow [question](https://stackoverflow.com/questions/49054125/cloud-ml-service-account-cannot-access-cloud-storage-and-is-not-listed-in-iam) except concerns the data access and not the model access (the model access already worked for us above). The question is not definitively answered though.
+When the above command is executed, the "preds/test\_json\_url.txt" actually contains an error message saying that the cloud ML service is not able to access the bucket with the data. This a bit strange because the bucket is part of the same project. From the IAM section of the GCP web interface, the cloud ml service appears to have the correct permissions and there is no service name that actually matches the service mentioned in the error message. This problem is similar to what is documented in this StackOverflow [question](https://stackoverflow.com/questions/49054125/cloud-ml-service-account-cannot-access-cloud-storage-and-is-not-listed-in-iam) except concerns the data access and not the model access (the model access already worked for us above). The question is not definitively answered though.
 
-It is possible that this problem is unique to my particular setup, but if you encounter it as well, follow the next steps to resolve it:
+It is possible that this problem is unique to our particular setup, but if you encounter it as well, follow the next steps to resolve it:
 
 1. Find the name of the service that "does not have storage.objects.get access"
     - Should look something like "cloud-ml-service-cml@******-cml.iam.gserviceaccount.com"
