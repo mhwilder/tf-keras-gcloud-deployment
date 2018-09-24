@@ -7,6 +7,7 @@ While trying to deploy a tf.keras model using Google Cloud Platform (GCP) ML Eng
 
 What is shown here is just one way to get this whole process working. The specific configurations may not be optimal for everyone's use case. Additionally, this field moves very quickly and the APIs are often changing so what works now may not work in 6 months.
 
+
 ## Setup
 
 This code is tested in python 3.6 on Mac OSX 10.13 with an Anaconda distribution (though all dependencies are reinstalled). The python libraries required are all installed within a virtual environment. If you don't have virtualenv, install it before proceeding. In the project root directory, run the following:
@@ -17,6 +18,7 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
+
 ### Setting up TensorFlow
 
 In this codebase we are using TensorFlow version 1.10 without a GPU. We will install it directly using the following command:
@@ -26,6 +28,7 @@ pip install --upgrade https://storage.googleapis.com/tensorflow/mac/cpu/tensorfl
 ```
 
 If not on Mac, follow the TensorFlow installation instructions [here](https://www.tensorflow.org/install/pip).
+
 
 ## Model Training and Preparation
 
@@ -38,6 +41,7 @@ In the root directory of the repo, run:
 ```bash
 python train.py
 ```
+
 
 ### Exporting the Model
 
@@ -60,6 +64,7 @@ NOTE: The base64 and url methods assume that the images are always jpeg. The cod
 
 NOTE: This section doesn't do much to optimize the size of the model. There are other actions that can be taken in the export process to optimize the model for inference. This [tutorial](https://cloud.google.com/ml-engine/docs/tensorflow/deploying-models) has some helpful information.
 
+
 ## General GCP Configuration
 
 To start off, you will need to have a GCP account. If this is your first time creating a GCP account, you may get some free credits. Once you have an account, follow the instructions below to get everything set up for this demo.
@@ -74,15 +79,105 @@ Follow steps 1-6 in the "Set up your GCP project" [here](https://cloud.google.co
     - Find the downloaded JSON file and move it into ~/.gcloud (make this directory first)
 - Steps 5 and 6 are pretty straightforward
 
-## GCP Model Configuration
+
+## GCP Bucket Setup
+
+To deploy a model to GCP, you need to have a storage bucket on GCP where the model resides. We will also use this bucket for sample data for the deployment option that just passes the URL when calling predict. Below are a quick set of instructions for setting up a bucket from the console. See the first 4 steps in this [tutorial](https://cloud.google.com/ml-engine/docs/tensorflow/getting-started-training-prediction#set_up_your_storage_name_short_bucket) for more details.
+
+NOTE: if you already had the Google cloud SDK installed on your machine, you will probably need to set the active project to the one we created in the above steps. You can do this with the following terminal command:
+
+```bash
+gcloud config set project tf-keras-deploy
+```
+
+Be sure that the last parameter above is the project_id, not the project name. In some cases, they may be different from each other (for example if you delete a project and then create a new one with the same name, the id will not match the name).
+
+To create a new bucket run the following commands in the terminal:
+
+```bash
+PROJECT_ID=$(gcloud config list project --format "value(core.project)")
+BUCKET_NAME=${PROJECT_ID}-mlengine
+echo $BUCKET_NAME
+REGION=us-central1
+gsutil mb -l $REGION gs://$BUCKET_NAME
+```
 
 
+## Input Preparation
 
-## Running Prediction
+Before moving on to testing, we will prepare some JSON input files that have the correct data format. Some of the docs suggest a JSON input format that looks something like this:
+
+```json
+{
+  "instances": [
+    {"input_key": image_content},
+    {"input_key": image_content}       
+  ]
+}
+```
+
+This may be necessary for processing a set of images. For single image processing, we found that it was necessary to use the following simpler format:
+
+```json
+{"input_key": image_content}
+```
+
+In both examples above, the "input\_key" should be consistent with the input key used in [export_models.py](export_models.py). For base64 encodings, this key must end with the string "bytes". The image content will differ depending on the input type being used. For the image as list string, this content is just a big string with the list. For the URL input version, the image_content is just a string with the URL. For the base64 encoded input, the image content is actually another dictionary that looks like this:
+
+```json
+{"b64": base64_encoded_string}
+```
+
+To generate these sample input JSON files for a test image in "data/test", run the following script:
+
+```bash
+python image_to_json.py
+```
+
+Note that the base64 encoded JSON file is about 60 times smaller than the file with the image values written out as a list string. This is the main motivation for using the base64 encoding.
 
 
+## Model Deployment and Testing
+
+In this example, we will create a single model and then use different versions of the model to test the different types of input. In production you might want to break these out into separate models depending on the requirements, but for this demo we went with the simplest path. Instructions for the model deployment process can be found [here](https://cloud.google.com/ml-engine/docs/tensorflow/getting-started-training-prediction#deploy_a_model_to_support_prediction) or [here](https://cloud.google.com/ml-engine/docs/tensorflow/deploying-models#creating_a_model_version). However, you can also just run the following terminal commands:
+
+```bash
+MODEL_NAME=highlights_fcn
+gcloud ml-engine models create $MODEL_NAME --regions=$REGION
+gcloud ml-engine models list
+```
+
+Below, we provide examples for the 3 different input scenarios. In each case, we first upload the appropriate model files to the bucket we created (we'll put them each inside a top level folder called "models"). Then we use the ml-engine versions create tool to create a new model version. Finally, we test the deployed model to make sure we get back reasonable results.
 
 
+### Local Model Testing
+
+Before we jump into deploying and testing the models, let's first run our test image through our trained model locally to see what the model predictions should look like.
+
+```bash
+python evaluate.py --image_path data/test/test_img.jpg \
+                   --heatmap_path data/test/test_heatmap.jpg \
+                   --output_name local
+```
+
+This should produce something like the image below though the exact output will differ some because each trained model will vary based on random initializations.
+
+![Image showing local model predictions](figs/preds_local.jpg "Local Predictions")
+
+### Image as list string
+
+
+### Image as base64 string
+
+
+### Image as URL
+
+
+## Batch Prediction
+
+We have not tested this, but if you want to do batch prediction, you should be able to follow the instructions [here](https://cloud.google.com/ml-engine/docs/tensorflow/getting-started-training-prediction#submit_a_batch_prediction_job).
+
+## Accessing the Model Through REST
 
 
 
