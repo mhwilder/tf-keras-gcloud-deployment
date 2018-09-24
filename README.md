@@ -326,7 +326,7 @@ When the above command is executed, the "preds/test\_json\_url.txt" actually con
 It is possible that this problem is unique to our particular setup, but if you encounter it as well, follow the next steps to resolve it:
 
 1. Find the name of the service that "does not have storage.objects.get access"
-    - Should look something like "cloud-ml-service-cml@******-cml.iam.gserviceaccount.com"
+    - Should look something like "cloud-ml-service-cml@12345-cml.iam.gserviceaccount.com"
 2. Log in to GCP web portal and click on the "Storage" section
 3. Be sure to select the "tf-keras-deploy" project at the top
 4. Click on the "tf-keras-deploy-mlengine" bucket
@@ -354,10 +354,5 @@ Compare this to the local predictions figure to be sure it looks right.
 ## Batch Prediction
 
 We have not tested this, but if you want to do batch prediction, you should be able to follow the instructions [here](https://cloud.google.com/ml-engine/docs/tensorflow/getting-started-training-prediction#submit_a_batch_prediction_job).
-
-## Accessing the Model Through REST
-
-
-
 
 
