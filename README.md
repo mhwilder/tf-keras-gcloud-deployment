@@ -172,8 +172,8 @@ This should produce something like the image below though the exact output will 
 Set up some bash variables specific to this input type:
 
 ```
-EXPORT_VERSION=v1
-INPUT_TYPE=json_b64
+EXPORT_VERSION=v1    # this should be whatever is hardcoded in export_models.py
+INPUT_TYPE=json_b64  # this is also hardcoded in export_models.py
 VERSION_NAME=${INPUT_TYPE}_${EXPORT_VERSION}
 BINARY_DIR_NAME=$(ls -1 models/$INPUT_TYPE/$EXPORT_VERSION)
 LOCAL_BINARIES=models/$INPUT_TYPE/$EXPORT_VERSION/$BINARY_DIR_NAME
