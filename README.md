@@ -1,5 +1,5 @@
 # tf-keras-gcloud-deployment
-Training and deploying a tf.keras model using Google Cloud ML Engine
+Training and deploying a TensorFlow tf.keras model using Google Cloud ML Engine
 
 ## Introduction
 
@@ -164,19 +164,19 @@ This should produce something like the image below though the exact output will 
 
 ![Image showing local model predictions](figs/preds_local.jpg "Local Predictions")
 
+
 ### Image as list string
-
-
-### Image as base64 string
 
 Set up some bash variables specific to this input type:
 
 ```
-EXPORT_VERSION=v1    # this should be whatever is hardcoded in export_models.py
-INPUT_TYPE=json_b64  # this is also hardcoded in export_models.py
+EXPORT_VERSION=v1     # this should be whatever is hardcoded in export_models.py
+INPUT_TYPE=json_list  # this is also hardcoded in export_models.py
 VERSION_NAME=${INPUT_TYPE}_${EXPORT_VERSION}
+echo $VERSION_NAME
 BINARY_DIR_NAME=$(ls -1 models/$INPUT_TYPE/$EXPORT_VERSION)
 LOCAL_BINARIES=models/$INPUT_TYPE/$EXPORT_VERSION/$BINARY_DIR_NAME
+echo $LOCAL_BINARIES
 REMOTE_BINARIES=gs://$BUCKET_NAME/$LOCAL_BINARIES
 ```
 
@@ -193,7 +193,59 @@ gcloud ml-engine versions create $VERSION_NAME \
 The creation of the model version takes a little while to process. Once it is done, you can verify that the model is there with the following command:
 
 ```
-gcloud ml-engine models list
+gcloud ml-engine versions list --model $MODEL_NAME
+```
+
+Now that the model is all set, we can call the model to get a prediction:
+
+```
+gcloud ml-engine predict --model $MODEL_NAME \
+                         --version $VERSION_NAME \
+                         --json-instances data/test/test_json_list.json \
+                         > preds/test_json_list.txt
+```
+
+Create a visualization of the result to make sure it looks right:
+
+```
+python evaluate.py --image_path data/test/test_img.jpg \
+                   --heatmap_path data/test/test_heatmap.jpg \
+                   --output_name list \
+                   --text_preds_path preds/test_json_list.txt
+```
+
+Compare this to the local predictions figure to be sure it looks right.
+
+
+### Image as base64 string
+
+Set up some bash variables specific to this input type:
+
+```
+EXPORT_VERSION=v1    # this should be whatever is hardcoded in export_models.py
+INPUT_TYPE=json_b64  # this is also hardcoded in export_models.py
+VERSION_NAME=${INPUT_TYPE}_${EXPORT_VERSION}
+echo $VERSION_NAME
+BINARY_DIR_NAME=$(ls -1 models/$INPUT_TYPE/$EXPORT_VERSION)
+LOCAL_BINARIES=models/$INPUT_TYPE/$EXPORT_VERSION/$BINARY_DIR_NAME
+echo $LOCAL_BINARIES
+REMOTE_BINARIES=gs://$BUCKET_NAME/$LOCAL_BINARIES
+```
+
+Upload the model to the cloud and create a model version for this input type:
+
+```
+gsutil cp -r $LOCAL_BINARIES $REMOTE_BINARIES
+gcloud ml-engine versions create $VERSION_NAME \
+                                 --model $MODEL_NAME \
+                                 --origin $REMOTE_BINARIES \
+                                 --runtime-version 1.10
+```
+
+The creation of the model version takes a little while to process. Once it is done, you can verify that the model is there with the following command:
+
+```
+gcloud ml-engine versions list --model $MODEL_NAME
 ```
 
 Now that the model is all set, we can call the model to get a prediction:
@@ -213,6 +265,8 @@ python evaluate.py --image_path data/test/test_img.jpg \
                    --output_name base64 \
                    --text_preds_path preds/test_json_b64.txt
 ```
+
+Compare this to the local predictions figure to be sure it looks right.
 
 
 ### Image as URL
